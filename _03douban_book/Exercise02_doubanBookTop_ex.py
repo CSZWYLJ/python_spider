@@ -78,46 +78,31 @@ class dbBook01:
         for k, v in dict_item.items():  # it指向cate列表
             label_item = {}
             label_list = []
-            cot = 1
-            if k == "科技":
-                for x in v:  # 对每一个cate
-                    cate_url = "https://book.douban.com" + x[1]  # 得到url
-                    book_url_list = self.extract_url(addr_url=cate_url)
-                    cate_item = {}
-                    book_item_list = []
-                    count = 1
-                    for book_url in book_url_list:  # 第一页的书籍列表
+            for x in v:  # 对每一个cate
+                cate_url = "https://book.douban.com" + x[1]  # 得到url
+                book_url_list = self.extract_url(addr_url=cate_url)
+                cate_item = {}
+                book_item_list = []
+                for book_url in book_url_list:  # 第一页的书籍列表
+                    item = {}
+                    book_item = self.get_detail_item(book_url)
+                    temp = book_item['r_name']
+                    book_item.pop('r_name')
+                    item[temp] = book_item
+                    book_item_list.append(item)
+                for page in range(1, 4):  # 70 翻页
+                    next_page_url = f"https://book.douban.com/tag/{x[0]}?start={page * 20}&type=T"
+                    print(f"正在进行{page + 1}页")
+                    next_url_list = self.extract_url(addr_url=next_page_url)
+                    for url in next_url_list:
                         item = {}
-                        book_item = self.get_detail_item(book_url)
-                        temp = book_item['r_name']
-                        book_item.pop('r_name')
-                        item[temp] = book_item
+                        next_book_item = self.get_detail_item(url)
+                        temp = next_book_item['r_name']
+                        next_book_item.pop('r_name')
+                        item[temp] = next_book_item
                         book_item_list.append(item)
-                        count += 1
-                        if count == 6:
-                            break
-                    for page in range(1, 4):  # 70 翻页
-                        next_page_url = f"https://book.douban.com/tag/{x[0]}?start={page * 20}&type=T"
-                        print(f"正在进行{page + 1}页")
-                        next_url_list = self.extract_url(addr_url=next_page_url)
-                        count = 1
-                        for url in next_url_list:
-                            item = {}
-                            next_book_item = self.get_detail_item(url)
-                            temp = next_book_item['r_name']
-                            next_book_item.pop('r_name')
-                            item[temp] = next_book_item
-                            book_item_list.append(item)
-                            count += 1
-                            if count == 6:
-                                break
-                    cate_item[x[0]] = book_item_list
-                    label_list.append(cate_item)
-                    cot += 1
-                    if cot == 3:
-                        break
-            else:
-                continue
+                cate_item[x[0]] = book_item_list
+                label_list.append(cate_item)
             label_item[k] = label_list
             self.save_mongo(label_item)
         return True
