@@ -115,6 +115,7 @@ class dbBook01:
             print('Save successfully!')
         else:
             print('Save error')
+        client.close()
 
     def run(self):
         dict_item = self.extract_url(self.start_url)
